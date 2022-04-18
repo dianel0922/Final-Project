@@ -5,6 +5,7 @@ team member
 - 0816012 鍾任軒
 - 0816088 陳元挺
 - 0613130 張芷嫣
+- 0819818 許慈若
 
 discussion link : [discussion_proposal](https://docs.google.com/document/d/18Npon0XLoFYIaJjk2bpSagqGhIGTyTumxrvYBMi1OCg/edit#)
 
