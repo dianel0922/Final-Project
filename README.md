@@ -3,6 +3,7 @@ Introduction to AI team 23
 
 team member
 - 0816012 鍾任軒
+- 0816088 陳元挺
 
 discussion link : [discussion_proposal](https://docs.google.com/document/d/18Npon0XLoFYIaJjk2bpSagqGhIGTyTumxrvYBMi1OCg/edit#)
 
