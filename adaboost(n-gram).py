@@ -136,7 +136,7 @@ x_test = np.array(x_test)
 y_train = train['label']
 y_test = test['label']
 
-def print_score(clf: DecisionTreeClassifier, x, y):
+def print_score(clf, x, y):
     pred = clf.predict(x)
     print(classification_report(y, pred, zero_division=1))
     print('accuracy', accuracy_score(y, pred))
@@ -149,7 +149,7 @@ def print_score(clf: DecisionTreeClassifier, x, y):
     
 
 #%% decision tree with news only
-pure_clf = DecisionTreeClassifier()
+pure_clf = AdaBoostClassifier()
 pure_clf.fit(x_train, y_train)
 print('the training data score of news only is:')
 print_score(pure_clf, x_train, y_train)
@@ -170,7 +170,7 @@ x_train_w = np.c_[x_train, writing_train]
 x_test_w = np.c_[x_test, writing_test]
 
 
-clf_w = DecisionTreeClassifier()
+clf_w = AdaBoostClassifier()
 clf_w.fit(x_train_w, y_train)
 print('the training data score of news + writing is:')
 print_score(clf_w, x_train_w, y_train)
@@ -191,7 +191,7 @@ for i in range(26, 32):
 x_train_q = np.c_[x_train, quantity_train]
 x_test_q = np.c_[x_test, quantity_test]
 
-clf_q = DecisionTreeClassifier()
+clf_q = AdaBoostClassifier()
 clf_q.fit(x_train_q, y_train)
 print('the training data score of news + quantity is:')
 print_score(clf_q, x_train_q, y_train)
@@ -205,7 +205,7 @@ x_train = np.c_[x_train, quantity_train]
 x_test = np.c_[x_test, writing_test]
 x_test = np.c_[x_test, quantity_test]
 
-clf = DecisionTreeClassifier()
+clf = AdaBoostClassifier()
 clf.fit(x_train, y_train)
 print('the training data score of news in total is:')
 print_score(clf, x_train, y_train)
