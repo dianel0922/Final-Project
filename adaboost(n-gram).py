@@ -28,6 +28,7 @@ train = pd.read_csv('valid_dataset/train.csv')#.head(100)
 test = pd.read_csv('valid_dataset/test.csv')#.head(50)
 #valid = pd.read_csv('valid_dataset/valid.csv').head(50)
 col_name = [i for i in train[0:1]][1:33]
+general = pd.read_csv('valid_dataset/general.csv', encoding='unicode_escape')#.head(50)
 
 class Ngram:
     def __init__(self, config, n=2):
@@ -211,3 +212,37 @@ print('the training data score of news in total is:')
 print_score(clf, x_train, y_train)
 print('the testing data score of news in total is: ')
 print_score(clf, x_test, y_test)
+
+#%%
+x_general = []
+
+
+for i,f in enumerate(general['content']):
+    corpus = [['[CLS]'] + biGram.tokenize(f)] + [['[CLS]'] + biGram.tokenize(general['title'][i])]
+
+    bigram_tokens = [(x+" "+i[j + 1]) for i in corpus 
+                for j, x in enumerate(i) if j < len(i) - 1]
+    count = [0]* feature_num
+    for f in bigram_tokens:
+        if(f in feature):
+            count[feature.index(f)]+=1
+    x_general.append(count)
+
+
+    
+x_general = np.array(x_general)
+y_general = general['label']
+
+#%%
+x_general_w = np.c_[x_general, np.zeros((len(x_general), 12))]
+x_general_q = np.c_[x_general, np.zeros((len(x_general), 18))]
+x_general_t = np.c_[x_general, np.zeros((len(x_general), 30))]
+
+print('the general data score of news only is: ')
+print_score(pure_clf, x_general, y_general)
+print('the general data score of news + writing is: ')
+print_score(clf_w, x_general_w, y_general)
+print('the general data score of news + quality is: ')
+print_score(clf_q, x_general_q, y_general)
+print('the general data score of news in total is: ')
+print_score(clf  , x_general_t, y_general)

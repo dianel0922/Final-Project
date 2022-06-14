@@ -37,6 +37,7 @@ from sklearn.metrics import *
 train = pd.read_csv('valid_dataset/train.csv')#.head(100)
 test = pd.read_csv('valid_dataset/test.csv')#.head(50)
 #valid = pd.read_csv('valid_dataset/valid.csv').head(50)
+general = pd.read_csv('valid_dataset/general.csv', encoding='unicode_escape')#.head(50)
 
 col_name = [i for i in train[0:1]][1:33]
 #print(col_name)
@@ -49,63 +50,58 @@ model.train(corpus, total_examples=len(corpus), epochs = 5)
 
 vector = model.wv
 
-tokenizer = Tokenizer(num_words = 6000)
-tokenizer.fit_on_texts(train['title'])
-sequences_title = tokenizer.texts_to_sequences(train['title'])
+words = model.wv.index_to_key
+wvs = model.wv[words]
+dic = {}
+for i,f in enumerate(words):
+    dic[f] = wvs[i]
 
-tokenizer = Tokenizer(num_words = 6000)
-tokenizer.fit_on_texts(train['text'])
-sequences_text = tokenizer.texts_to_sequences(train['text'])
+#%% fit train data    
+x_train = []
 
-word_index = tokenizer.word_index
-print('Found %s unique tokens.' % len(word_index))
+for i,f in enumerate(train['text']):
+    one = np.zeros((500, 1))
+    corpus = [['[CLS]'] + tokenizer.tokenize(f)] + [['[CLS]'] + tokenizer.tokenize(train['title'][i])]
+        
+    if len(corpus[0]) < 500:
+        for i in range(500-len(corpus[0])):
+            corpus[0].append('0')
 
-data_title = pad_sequences(sequences_title, maxlen= 10000)
-data_text = pad_sequences(sequences_text, maxlen = 10000)
-data = np.c_[data_title, data_text]
-
-labels = train['label']
-print('Shape of data tensor:', data.shape)
-print('Shape of label tensor:', labels.shape)
-
-x_train = data
-y_train = labels
-
-#print(f'x_train: {x_train}, size = {len(x_train)}')
-#print(f'y_train: {y_train}, size = {len(y_train)}')
+    one=[]
+    for ii,ff in enumerate(corpus[0][0:500]):
+        try:
+            one.append(dic[ff].mean())
+        except:
+            one.append(0)
+            
+    # print(one)
+    x_train.append(one)
 
 #%% fit test data
+x_test = []
+for i,f in enumerate(test['text']):
+    corpus = [['[CLS]'] + tokenizer.tokenize(f)] + [['[CLS]'] + tokenizer.tokenize(test['title'][i])]
+        
+    if len(corpus[0]) < 500:
+        for i in range(500-len(corpus[0])):
+            corpus[0].append('0')
 
-sequences_title = tokenizer.texts_to_sequences(test['title'])       
-sequences_test = tokenizer.texts_to_sequences(test['text'])
+    one=[]
+    for ii,ff in enumerate(corpus[0][0:500]):
+        try:
+            one.append(dic[ff].mean())
+        except:
+            one.append(0)
+            
+    # print(one)
+    x_test.append(one)
 
-data_title = pad_sequences(sequences_title, maxlen= 10000 )
-data_text = pad_sequences(sequences_test, maxlen= 10000)
+#%% some preprocess
+x_train = np.array(x_train)
+x_test = np.array(x_test)
+y_train = train['label']
 y_test = test['label']
-x_test = np.c_[data_title, data_text]
 
-#print(x_test)
-#print(y_test)
-
-
-#%% meaning unknown code 
-'''
-EMBEDDING_DIM = 100
-embedding_matrix = np.zeros((len(word_index) + 1, EMBEDDING_DIM))
-for word, i in word_index.items():
-    try:
-      embedding_vector = vector[word]
-    except:
-      embedding_vector = None
-    if embedding_vector is not None:
-        # words not found in embedding index will be all-zeros.
-        embedding_matrix[i] = embedding_vector
-    
-#embedding_matrix = np.transpose(embedding_matrix)
-
-#print(type(embedding_matrix))
-#print(embedding_matrix.shape)
-'''
 #%% score function
 
 def print_score(clf, x, y):
@@ -183,3 +179,40 @@ print('the training data score of news in total is:')
 print_score(clf, x_train, y_train)
 print('the testing data score of news in total is: ')
 print_score(clf, x_test, y_test)
+
+#%% fit general data
+x_general = []
+for i,f in enumerate(general['content']):
+    corpus = [['[CLS]'] + tokenizer.tokenize(f)] + [['[CLS]'] + tokenizer.tokenize(general['title'][i])]
+        
+    if len(corpus[0]) < 500:
+        for i in range(500-len(corpus[0])):
+            corpus[0].append('0')
+
+    one=[]
+    for ii,ff in enumerate(corpus[0][0:500]):
+        try:
+            one.append(dic[ff].mean())
+        except:
+            one.append(0)
+            
+    # print(one)
+    x_general.append(one)
+
+#%% some preprocess
+x_general = np.array(x_general)
+y_general = general['label']
+
+#%%
+x_general_w = np.c_[x_general, np.zeros((len(x_general), 12))]
+x_general_q = np.c_[x_general, np.zeros((len(x_general), 18))]
+x_general_t = np.c_[x_general, np.zeros((len(x_general), 30))]
+
+print('the general data score of news only is: ')
+print_score(pure_clf, x_general, y_general)
+print('the general data score of news + writing is: ')
+print_score(clf_w, x_general_w, y_general)
+print('the general data score of news + quality is: ')
+print_score(clf_q, x_general_q, y_general)
+print('the general data score of news in total is: ')
+print_score(clf  , x_general_t, y_general)
